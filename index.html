@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZELO 綁定通知</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+body{margin:0;padding:24px;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;color:#222;}
+.card{max-width:420px;margin:0 auto;background:#fff;border-radius:20px;padding:24px;box-shadow:0 8px 24px rgba(0,0,0,.08);}
+.title{font-size:22px;font-weight:900;margin-bottom:10px;}
+.desc{font-size:14px;color:#666;line-height:1.7;margin-bottom:20px;}
+.input{width:100%;box-sizing:border-box;font-size:17px;padding:14px;border-radius:12px;border:1px solid #d1d5db;margin-bottom:14px;}
+.button{width:100%;border:0;background:#111;color:#fff;font-size:17px;font-weight:900;padding:15px;border-radius:12px;}
+.msg{margin-top:16px;font-size:14px;color:#16a34a;font-weight:700;white-space:pre-line;}
+.err{margin-top:16px;font-size:14px;color:#dc2626;font-weight:700;white-space:pre-line;}
+.userinfo{font-size:13px;color:#999;margin-bottom:14px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="title">ZELO SPORT 通知綁定</div>
+  <div class="desc">請輸入您的手機號碼，完成後即可在 LINE 收到您的維修申請通知。請填寫與送修表單相同的手機號碼。</div>
+  <div id="userinfo" class="userinfo">正在載入 LINE 資訊...</div>
+  <input id="phone" class="input" type="tel" placeholder="請輸入手機號碼，例如 0912345678">
+  <button id="submitBtn" class="button" onclick="submitBind()">完成綁定</button>
+  <div id="result"></div>
+</div>
+
+<script>
+// ↓↓↓ 請把這裡換成你的 LIFF ID（跟原本一樣即可）
+const LIFF_ID = "2007022255-PfOLsmAp";
+// ↓↓↓ 請把這裡換成你的 Apps Script Web App 網址（跟原本一樣即可）
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyi4Vr_Q7Wl_c-_AcxmcaoN12rzXEIVNLrrBpWC9ASIQQ9CAou5AIkdO4AQyKnc8ilRqw/exec";
+
+let liffUserId = "";
+let liffDisplayName = "";
+
+liff.init({ liffId: LIFF_ID }).then(function () {
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return;
+  }
+  return liff.getProfile();
+}).then(function (profile) {
+  if (!profile) return;
+  liffUserId = profile.userId;
+  liffDisplayName = profile.displayName || "";
+  document.getElementById("userinfo").innerText = "LINE 帳號：" + liffDisplayName;
+}).catch(function (err) {
+  document.getElementById("userinfo").innerText = "載入失敗，請重新從 LINE 開啟此頁面";
+  console.error(err);
+});
+
+function submitBind() {
+  const phone = document.getElementById("phone").value.trim();
+  const resultEl = document.getElementById("result");
+  resultEl.innerHTML = "";
+
+  if (!liffUserId) {
+    resultEl.innerHTML = "<div class=\"err\">尚未取得 LINE 資訊，請稍後再試，或重新從 LINE 開啟此頁面。</div>";
+    return;
+  }
+
+  if (!phone || phone.replace(/[^0-9]/g, "").length < 8) {
+    resultEl.innerHTML = "<div class=\"err\">請輸入正確的手機號碼</div>";
+    return;
+  }
+
+  document.getElementById("submitBtn").innerText = "綁定中...";
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      action: "bind",
+      phone: phone,
+      userId: liffUserId,
+      displayName: liffDisplayName
+    })
+  }).then(function (res) { return res.json(); })
+    .then(function (data) {
+      document.getElementById("submitBtn").innerText = "完成綁定";
+      if (data && data.ok) {
+        resultEl.innerHTML = "<div class=\"msg\">綁定成功！\n之後填寫送修表單時，請使用這組手機號碼，即可在這裡收到通知。</div>";
+      } else {
+        resultEl.innerHTML = "<div class=\"err\">綁定失敗，請稍後再試。</div>";
+      }
+    }).catch(function (err) {
+      document.getElementById("submitBtn").innerText = "完成綁定";
+      resultEl.innerHTML = "<div class=\"err\">連線失敗，請稍後再試。</div>";
+      console.error(err);
+    });
+}
+</script>
+</body>
+</html>
