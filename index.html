@@ -84,11 +84,13 @@ function submitBind() {
       if (data && data.ok) {
         resultEl.innerHTML = "<div class=\"msg\">綁定成功！\n之後填寫送修表單時，請使用這組手機號碼，即可在這裡收到通知。</div>";
       } else {
-        resultEl.innerHTML = "<div class=\"err\">綁定失敗，請稍後再試。</div>";
+        // 【步驟 1】把後端回傳的錯誤代碼顯示出來，方便排查
+        resultEl.innerHTML = "<div class=\"err\">綁定失敗（" + ((data && data.error) || "no_error_code") + "），請稍後再試。</div>";
       }
     }).catch(function (err) {
       document.getElementById("submitBtn").innerText = "完成綁定";
-      resultEl.innerHTML = "<div class=\"err\">連線失敗，請稍後再試。</div>";
+      // 連線層錯誤也把原因帶出來（例如回應不是 JSON 會顯示 SyntaxError）
+      resultEl.innerHTML = "<div class=\"err\">連線失敗（" + ((err && err.name) || "unknown") + "），請稍後再試。</div>";
       console.error(err);
     });
 }
