@@ -14,7 +14,8 @@
   button.primary{width:100%;padding:14px;background:#111;color:#fff;border:0;border-radius:10px;font-size:16px}
   button.primary:disabled{opacity:.5}
   #msg{font-size:14px;margin-top:10px;min-height:20px;word-break:break-all}
-  #dbg{font-size:11px;color:#bbb;margin-top:8px;word-break:break-all}
+  #msg.err{color:#dc2626}
+  #inputArea{display:none}
   #formView{position:fixed;inset:0;background:#fff;display:none;flex-direction:column}
   .topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-size:14px;border-bottom:1px solid #eee}
   .topbar button{background:#111;color:#fff;border:0;border-radius:8px;padding:8px 12px}
@@ -26,10 +27,11 @@
   <h1>ZELO SPORT 通知綁定</h1>
   <p>請輸入您的手機號碼，完成後即可在 LINE 收到您的維修申請通知。請填寫與送修表單相同的手機號碼。</p>
   <div class="meta">LINE 帳號：<span id="name">讀取中…</span></div>
-  <input id="phone" type="tel" inputmode="numeric" placeholder="請輸入手機號碼，例如 0912345678">
-  <button id="bindBtn" class="primary" type="button">完成綁定</button>
-  <div id="msg"></div>
-  <div id="dbg">v2 · debug</div>
+  <div id="inputArea">
+    <input id="phone" type="tel" inputmode="numeric" placeholder="請輸入手機號碼，例如 0912345678" autocomplete="tel">
+    <button id="bindBtn" class="primary" type="button">完成綁定</button>
+  </div>
+  <div id="msg">正在確認綁定狀態…</div>
 </div>
 
 <div id="formView">
@@ -48,15 +50,30 @@ const GAS_URL     = 'https://script.google.com/macros/s/AKfycbyi4Vr_Q7Wl_c-_Acxm
 const FORM_ID     = '1FAIpQLSdoxfnVi2zkaI7p7MOcuVVySrR1WztmBP-G5rO-3MbKrq7QJg';
 const ENTRY_PHONE = 'entry.1237086045';
 const ENTRY_NAME  = 'entry.1394252463';
-const FORM_MODE   = 'redirect';
+const FORM_MODE   = 'redirect';   // 'redirect'（建議）或 'iframe'
+
+// 後端錯誤代碼 → 客人看得懂的訊息
+const ERROR_TEXT = {
+  invalid_phone:           '手機號碼格式不正確，請輸入 09 開頭的 10 碼號碼。',
+  invalid_userId:          '無法取得 LINE 帳號資訊，請關閉後重新從 LINE 開啟此頁。',
+  bindings_header_missing: '系統設定異常，請聯絡客服協助。',
+  invalid_json:            '資料格式錯誤，請重新操作一次。',
+  unknown_action:          '系統無法辨識此操作，請重新操作一次。',
+  server_error:            '系統暫時忙碌，請稍後再試。'
+};
 
 let profile = null;
 const $ = id => document.getElementById(id);
-const dbg = t => { $('dbg').textContent = 'v2 · debug · ' + t; };
+
+function setMsg(text, isErr = false){
+  $('msg').textContent = text;
+  $('msg').className = isErr ? 'err' : '';
+}
 
 function normalizePhone(v){
   let d = String(v || '').replace(/\D/g, '');
   if (d.startsWith('886')) d = '0' + d.slice(3);
+  if (d.length === 9 && d.startsWith('9')) d = '0' + d;
   return d;
 }
 
@@ -71,7 +88,8 @@ function buildFormUrl(phone){
 function showForm(phone, already = false){
   const url = buildFormUrl(phone);
   if (FORM_MODE === 'redirect') {
-    $('msg').textContent = already ? '正在開啟送修表單…' : '綁定完成！正在開啟送修表單…';
+    $('inputArea').style.display = 'none';
+    setMsg(already ? '正在開啟送修表單…' : '綁定完成！正在開啟送修表單…');
     setTimeout(() => { window.location.href = url; }, 800);
     return;
   }
@@ -79,6 +97,13 @@ function showForm(phone, already = false){
   $('formFrame').src = url;
   $('bindCard').style.display = 'none';
   $('formView').style.display = 'flex';
+}
+
+function showBindInput(){
+  $('inputArea').style.display = 'block';
+  setMsg('');
+  $('bindBtn').onclick = bind;
+  $('phone').addEventListener('keydown', e => { if (e.key === 'Enter') bind(); });
 }
 
 $('closeBtn').onclick = () => liff.isInClient() ? liff.closeWindow() : window.close();
@@ -89,54 +114,62 @@ async function main(){
   profile = await liff.getProfile();
   $('name').textContent = profile.displayName;
 
+  // 已綁定者直接進表單
   try {
-    const r = await fetch(`${GAS_URL}?action=check&userId=${encodeURIComponent(profile.userId)}`, { method: 'GET', redirect: 'follow' });
-    const raw = await r.text();
-    let d = null;
-    try { d = JSON.parse(raw); } catch (_) { dbg(`check 非JSON HTTP ${r.status}: ${raw.slice(0,100)}`); }
-    if (d) {
-      dbg(`check OK: ${raw.slice(0,80)}`);
-      if (d.bound && d.phone) { showForm(d.phone, true); return; }
-    }
-  } catch (e) { dbg('check 失敗: ' + (e.message || e)); }
+    const r = await fetch(`${GAS_URL}?action=check&userId=${encodeURIComponent(profile.userId)}`, {
+      method: 'GET',
+      redirect: 'follow'
+    });
+    const d = await r.json();
+    if (d.bound && d.phone) { showForm(d.phone, true); return; }
+  } catch (_) { /* 檢查失敗就照常顯示綁定輸入區 */ }
 
-  $('bindBtn').onclick = bind;
+  showBindInput();
 }
 
 async function bind(){
   const phone = normalizePhone($('phone').value);
-  if (!/^09\d{8}$/.test(phone)) { $('msg').textContent = '請輸入正確的 10 碼手機號碼'; return; }
+  if (!/^09\d{8}$/.test(phone)) { setMsg('請輸入正確的 10 碼手機號碼', true); return; }
+
   $('bindBtn').disabled = true;
-  $('msg').textContent = '綁定中…';
+  setMsg('綁定中…');
+
   try {
     const r = await fetch(GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       redirect: 'follow',
-      body: JSON.stringify({ action: 'bind', userId: profile.userId, displayName: profile.displayName, phone })
+      body: JSON.stringify({
+        action: 'bind',
+        userId: profile.userId,
+        displayName: profile.displayName,
+        phone
+      })
     });
+
     const raw = await r.text();
     let d;
     try { d = JSON.parse(raw); }
     catch (_) {
-      $('msg').textContent = `後端回應非 JSON（HTTP ${r.status}）：${raw.replace(/<[^>]+>/g,' ').slice(0,160)}`;
+      setMsg('系統回應異常，請稍後再試。', true);
       $('bindBtn').disabled = false;
       return;
     }
+
     const ok = d.ok === true || d.success === true || d.status === 'ok' || d.status === 'already_bound';
     if (ok) {
       showForm(phone, d.status === 'already_bound');
     } else {
-      $('msg').textContent = d.message || d.error || ('綁定失敗：' + raw.slice(0,160));
+      setMsg(d.message || ERROR_TEXT[d.error] || '綁定失敗，請稍後再試。', true);
       $('bindBtn').disabled = false;
     }
   } catch (e) {
-    $('msg').textContent = '連線失敗：' + (e && e.message ? e.message : e);
+    setMsg('連線失敗，請確認網路後再試。', true);
     $('bindBtn').disabled = false;
   }
 }
 
-main().catch(e => { $('msg').textContent = '初始化失敗：' + e.message; });
+main().catch(e => { setMsg('初始化失敗：' + e.message, true); });
 </script>
 </body>
 </html>
