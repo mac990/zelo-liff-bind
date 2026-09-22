@@ -1,99 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZELO 綁定通知</title>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZELO SPORT 通知綁定</title>
 <style>
-body{margin:0;padding:24px;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;color:#222;}
-.card{max-width:420px;margin:0 auto;background:#fff;border-radius:20px;padding:24px;box-shadow:0 8px 24px rgba(0,0,0,.08);}
-.title{font-size:22px;font-weight:900;margin-bottom:10px;}
-.desc{font-size:14px;color:#666;line-height:1.7;margin-bottom:20px;}
-.input{width:100%;box-sizing:border-box;font-size:17px;padding:14px;border-radius:12px;border:1px solid #d1d5db;margin-bottom:14px;}
-.button{width:100%;border:0;background:#111;color:#fff;font-size:17px;font-weight:900;padding:15px;border-radius:12px;}
-.msg{margin-top:16px;font-size:14px;color:#16a34a;font-weight:700;white-space:pre-line;}
-.err{margin-top:16px;font-size:14px;color:#dc2626;font-weight:700;white-space:pre-line;}
-.userinfo{font-size:13px;color:#999;margin-bottom:14px;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#f5f5f5}
+  .card{max-width:420px;margin:24px auto;background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  h1{font-size:20px;margin:0 0 8px}
+  p{color:#555;font-size:14px;line-height:1.6}
+  .meta{font-size:12px;color:#888}
+  input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:16px;margin:8px 0 12px}
+  button.primary{width:100%;padding:14px;background:#111;color:#fff;border:0;border-radius:10px;font-size:16px}
+  #msg{font-size:14px;margin-top:10px;min-height:20px}
+  #formView{position:fixed;inset:0;background:#fff;display:none;flex-direction:column}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-size:14px;border-bottom:1px solid #eee}
+  .topbar button{background:#111;color:#fff;border:0;border-radius:8px;padding:8px 12px}
+  #formFrame{flex:1;width:100%;border:0}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="title">ZELO SPORT 通知綁定</div>
-  <div class="desc">請輸入您的手機號碼，完成後即可在 LINE 收到您的維修申請通知。請填寫與送修表單相同的手機號碼。</div>
-  <div id="userinfo" class="userinfo">正在載入 LINE 資訊...</div>
-  <input id="phone" class="input" type="tel" placeholder="請輸入手機號碼，例如 0912345678">
-  <button id="submitBtn" class="button" onclick="submitBind()">完成綁定</button>
-  <div id="result"></div>
+<div id="bindCard" class="card">
+  <h1>ZELO SPORT 通知綁定</h1>
+  <p>請輸入您的手機號碼，完成後即可在 LINE 收到您的維修申請通知。請填寫與送修表單相同的手機號碼。</p>
+  <div class="meta">LINE 帳號：<span id="name">讀取中…</span></div>
+  <input id="phone" type="tel" inputmode="numeric" placeholder="請輸入手機號碼，例如 0912345678">
+  <button id="bindBtn" class="primary" type="button">完成綁定</button>
+  <div id="msg"></div>
 </div>
 
+<div id="formView">
+  <div class="topbar">
+    <span id="formHint">✅ 綁定完成，請填寫送修表單</span>
+    <button id="closeBtn" type="button">完成，關閉</button>
+  </div>
+  <iframe id="formFrame" title="送修表單"></iframe>
+</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-// ↓↓↓ 請把這裡換成你的 LIFF ID（跟原本一樣即可）
-const LIFF_ID = "2007022255-PfOLsmAp";
-// ↓↓↓ 請把這裡換成你的 Apps Script Web App 網址（跟原本一樣即可）
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyi4Vr_Q7Wl_c-_AcxmcaoN12rzXEIVNLrrBpWC9ASIQQ9CAou5AIkdO4AQyKnc8ilRqw/exec";
+// ===== 設定區 =====
+const LIFF_ID     = '2007022255-PfOLsmAp';
+const GAS_URL     = 'https://script.google.com/macros/s/XXXX/exec';   // ← 換成你原本的 Apps Script 網址
+const FORM_ID     = '1FAIpQLSdoxfnVi2zkaI7p7MOcuVVySrR1WztmBP-G5rO-3MbKrq7QJg';
+const ENTRY_PHONE = 'entry.1237086045';
+const ENTRY_NAME  = 'entry.1394252463';   // ← 確認為「LINE 顯示名稱」；不是就改 entry.545338855；表單沒這題設 null
+const FORM_MODE   = 'redirect';           // 'redirect'（同視窗導向，建議）或 'iframe'（無檔案上傳題才可用）
 
-let liffUserId = "";
-let liffDisplayName = "";
+let profile = null;
+const $ = id => document.getElementById(id);
 
-liff.init({ liffId: LIFF_ID }).then(function () {
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return;
-  }
-  return liff.getProfile();
-}).then(function (profile) {
-  if (!profile) return;
-  liffUserId = profile.userId;
-  liffDisplayName = profile.displayName || "";
-  document.getElementById("userinfo").innerText = "LINE 帳號：" + liffDisplayName;
-}).catch(function (err) {
-  document.getElementById("userinfo").innerText = "載入失敗，請重新從 LINE 開啟此頁面";
-  console.error(err);
-});
-
-function submitBind() {
-  const phone = document.getElementById("phone").value.trim();
-  const resultEl = document.getElementById("result");
-  resultEl.innerHTML = "";
-
-  if (!liffUserId) {
-    resultEl.innerHTML = "<div class=\"err\">尚未取得 LINE 資訊，請稍後再試，或重新從 LINE 開啟此頁面。</div>";
-    return;
-  }
-
-  if (!phone || phone.replace(/[^0-9]/g, "").length < 8) {
-    resultEl.innerHTML = "<div class=\"err\">請輸入正確的手機號碼</div>";
-    return;
-  }
-
-  document.getElementById("submitBtn").innerText = "綁定中...";
-
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      action: "bind",
-      phone: phone,
-      userId: liffUserId,
-      displayName: liffDisplayName
-    })
-  }).then(function (res) { return res.json(); })
-    .then(function (data) {
-      document.getElementById("submitBtn").innerText = "完成綁定";
-      if (data && data.ok) {
-        resultEl.innerHTML = "<div class=\"msg\">綁定成功！\n之後填寫送修表單時，請使用這組手機號碼，即可在這裡收到通知。</div>";
-      } else {
-        // 【步驟 1】把後端回傳的錯誤代碼顯示出來，方便排查
-        resultEl.innerHTML = "<div class=\"err\">綁定失敗（" + ((data && data.error) || "no_error_code") + "），請稍後再試。</div>";
-      }
-    }).catch(function (err) {
-      document.getElementById("submitBtn").innerText = "完成綁定";
-      // 連線層錯誤也把原因帶出來（例如回應不是 JSON 會顯示 SyntaxError）
-      resultEl.innerHTML = "<div class=\"err\">連線失敗（" + ((err && err.name) || "unknown") + "），請稍後再試。</div>";
-      console.error(err);
-    });
+function normalizePhone(v){
+  let d = String(v || '').replace(/\D/g, '');
+  if (d.startsWith('886')) d = '0' + d.slice(3);
+  return d;
 }
+
+function buildFormUrl(phone){
+  const p = new URLSearchParams({ usp: 'pp_url' });
+  if (FORM_MODE === 'iframe') p.set('embedded', 'true');
+  p.set(ENTRY_PHONE, phone);
+  if (ENTRY_NAME && profile?.displayName) p.set(ENTRY_NAME, profile.displayName);
+  return `https://docs.google.com/forms/d/e/${FORM_ID}/viewform?${p}`;
+}
+
+function showForm(phone, already = false){
+  const url = buildFormUrl(phone);
+  if (FORM_MODE === 'redirect') {
+    $('msg').textContent = already ? '正在開啟送修表單…' : '綁定完成！正在開啟送修表單…';
+    setTimeout(() => { window.location.href = url; }, 800);
+    return;
+  }
+  $('formHint').textContent = already ? '📋 請填寫送修表單' : '✅ 綁定完成，請填寫送修表單';
+  $('formFrame').src = url;
+  $('bindCard').style.display = 'none';
+  $('formView').style.display = 'flex';
+}
+
+$('closeBtn').onclick = () => liff.isInClient() ? liff.closeWindow() : window.close();
+
+async function main(){
+  await liff.init({ liffId: LIFF_ID });
+  if (!liff.isLoggedIn()) { liff.login(); return; }
+  profile = await liff.getProfile();
+  $('name').textContent = profile.displayName;
+
+  // 已綁定者直接進表單（需搭配下方 doGet 的 check 分支）
+  try {
+    const r = await fetch(`${GAS_URL}?action=check&userId=${encodeURIComponent(profile.userId)}`);
+    const d = await r.json();
+    if (d.bound && d.phone) { showForm(d.phone, true); return; }
+  } catch (e) { /* 檢查失敗就照常顯示綁定卡片 */ }
+
+  $('bindBtn').onclick = bind;
+}
+
+async function bind(){
+  const phone = normalizePhone($('phone').value);
+  if (!/^09\d{8}$/.test(phone)) { $('msg').textContent = '請輸入正確的 10 碼手機號碼'; return; }
+  $('bindBtn').disabled = true;
+  $('msg').textContent = '綁定中…';
+  try {
+    // ↓ body 欄位與回傳判斷請對照你原本 handleBindPost_ 的格式
+    const r = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ userId: profile.userId, displayName: profile.displayName, phone })
+    });
+    const d = await r.json();
+    if (d.ok || d.status === 'ok' || d.status === 'already_bound') {
+      showForm(phone, d.status === 'already_bound');
+    } else {
+      $('msg').textContent = d.message || '綁定失敗，請稍後再試';
+      $('bindBtn').disabled = false;
+    }
+  } catch (e) {
+    $('msg').textContent = '連線失敗，請稍後再試';
+    $('bindBtn').disabled = false;
+  }
+}
+
+main().catch(e => { $('msg').textContent = '初始化失敗：' + e.message; });
 </script>
 </body>
 </html>
