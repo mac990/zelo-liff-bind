@@ -5,34 +5,114 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ZELO SPORT 通知綁定</title>
 <style>
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#f5f5f5}
-  .card{max-width:420px;margin:24px auto;background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-  h1{font-size:20px;margin:0 0 8px}
-  p{color:#555;font-size:14px;line-height:1.6}
-  .meta{font-size:12px;color:#888}
-  input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:16px;margin:8px 0 12px}
-  button.primary{width:100%;padding:14px;background:#111;color:#fff;border:0;border-radius:10px;font-size:16px}
-  button.primary:disabled{opacity:.5}
-  #msg{font-size:14px;margin-top:10px;min-height:20px;word-break:break-all}
-  #msg.err{color:#dc2626}
+  :root{
+    --red:#e10600; --red-dark:#b00000; --black:#0a0a0a;
+    --ink:#111; --muted:#666; --line:#e6e6e6; --white:#fff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+    background:var(--black);
+    background-image:linear-gradient(135deg,#0a0a0a 0%,#1a1a1a 60%,#0a0a0a 100%);
+    color:var(--ink);
+  }
+
+  /* 頂部品牌列 */
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    padding:18px 20px 6px;color:var(--white);
+    font-weight:800;letter-spacing:.18em;font-size:14px;
+  }
+  .brand::before{content:"";width:6px;height:22px;background:var(--red);border-radius:2px}
+
+  /* 卡片 */
+  .card{
+    max-width:420px;margin:14px auto 32px;
+    background:var(--white);border-radius:18px;padding:26px 24px 22px;
+    box-shadow:0 12px 40px rgba(0,0,0,.45);
+    border-top:6px solid var(--red);
+  }
+  h1{font-size:22px;margin:0 0 6px;font-weight:800;letter-spacing:.02em}
+  h1 small{display:block;font-size:12px;color:var(--red);font-weight:700;letter-spacing:.2em;margin-bottom:6px}
+  p{color:var(--muted);font-size:14px;line-height:1.7;margin:0 0 14px}
+
+  .meta{
+    display:flex;align-items:center;gap:8px;
+    font-size:13px;color:var(--muted);
+    background:#f7f7f7;border-left:3px solid var(--black);
+    padding:10px 12px;border-radius:8px;margin-bottom:16px;
+  }
+  .meta span{color:var(--ink);font-weight:700}
+
+  input{
+    width:100%;padding:14px;border:2px solid var(--line);border-radius:12px;
+    font-size:17px;margin:6px 0 12px;outline:none;background:#fff;
+    transition:border-color .15s;
+  }
+  input:focus{border-color:var(--red)}
+
+  button.primary{
+    width:100%;padding:15px;border:0;border-radius:12px;
+    background:var(--red);color:var(--white);
+    font-size:16px;font-weight:800;letter-spacing:.06em;
+    box-shadow:0 6px 18px rgba(225,6,0,.35);
+    transition:transform .08s,background .15s;
+  }
+  button.primary:active{transform:scale(.98)}
+  button.primary:hover{background:var(--red-dark)}
+  button.primary:disabled{opacity:.55;box-shadow:none}
+
+  /* 狀態訊息 */
+  #msg{
+    font-size:14px;margin-top:14px;min-height:22px;word-break:break-all;
+    color:var(--ink);display:flex;align-items:center;gap:8px;
+  }
+  #msg.err{
+    background:#fdecec;color:var(--red-dark);border-left:3px solid var(--red);
+    padding:10px 12px;border-radius:8px;font-weight:600;
+  }
+  /* 初始「正在確認綁定狀態…」的轉圈 */
+  #msg.loading::before{
+    content:"";width:16px;height:16px;flex:none;border-radius:50%;
+    border:2px solid #f0c9c8;border-top-color:var(--red);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
   #inputArea{display:none}
-  #formView{position:fixed;inset:0;background:#fff;display:none;flex-direction:column}
-  .topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;font-size:14px;border-bottom:1px solid #eee}
-  .topbar button{background:#111;color:#fff;border:0;border-radius:8px;padding:8px 12px}
+
+  /* iframe 表單模式 */
+  #formView{position:fixed;inset:0;background:var(--white);display:none;flex-direction:column}
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 14px;font-size:14px;font-weight:700;
+    background:var(--black);color:var(--white);border-bottom:3px solid var(--red);
+  }
+  .topbar button{
+    background:var(--red);color:var(--white);border:0;border-radius:8px;
+    padding:8px 14px;font-weight:700;
+  }
   #formFrame{flex:1;width:100%;border:0}
+
+  .foot{text-align:center;color:#777;font-size:11px;letter-spacing:.1em;padding-bottom:20px}
 </style>
 </head>
 <body>
+<div class="brand">ZELO SPORT</div>
+
 <div id="bindCard" class="card">
-  <h1>ZELO SPORT 通知綁定</h1>
+  <h1><small>REPAIR SERVICE</small>通知綁定</h1>
   <p>請輸入您的手機號碼，完成後即可在 LINE 收到您的維修申請通知。請填寫與送修表單相同的手機號碼。</p>
   <div class="meta">LINE 帳號：<span id="name">讀取中…</span></div>
   <div id="inputArea">
     <input id="phone" type="tel" inputmode="numeric" placeholder="請輸入手機號碼，例如 0912345678" autocomplete="tel">
     <button id="bindBtn" class="primary" type="button">完成綁定</button>
   </div>
-  <div id="msg">正在確認綁定狀態…</div>
+  <div id="msg" class="loading">正在確認綁定狀態…</div>
 </div>
+
+<div class="foot">© ZELO SPORT</div>
 
 <div id="formView">
   <div class="topbar">
@@ -52,7 +132,6 @@ const ENTRY_PHONE = 'entry.1237086045';
 const ENTRY_NAME  = 'entry.1394252463';
 const FORM_MODE   = 'redirect';   // 'redirect'（建議）或 'iframe'
 
-// 後端錯誤代碼 → 客人看得懂的訊息
 const ERROR_TEXT = {
   invalid_phone:           '手機號碼格式不正確，請輸入 09 開頭的 10 碼號碼。',
   invalid_userId:          '無法取得 LINE 帳號資訊，請關閉後重新從 LINE 開啟此頁。',
@@ -114,7 +193,6 @@ async function main(){
   profile = await liff.getProfile();
   $('name').textContent = profile.displayName;
 
-  // 已綁定者直接進表單
   try {
     const r = await fetch(`${GAS_URL}?action=check&userId=${encodeURIComponent(profile.userId)}`, {
       method: 'GET',
