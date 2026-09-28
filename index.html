@@ -3,98 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ZELO SPORT 通知綁定</title>
+<title>ZELO SPORT</title>
 <style>
-  :root{
-    --red:#e10600; --red-dark:#b00000; --black:#0a0a0a;
-    --ink:#111; --muted:#666; --line:#e6e6e6; --white:#fff;
-  }
+  /* ===== 樣式與原版完全相同，略 ===== */
+  :root{--red:#e10600;--red-dark:#b00000;--black:#0a0a0a;--ink:#111;--muted:#666;--line:#e6e6e6;--white:#fff}
   *{box-sizing:border-box}
-  body{
-    margin:0;min-height:100vh;
-    font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
-    background:var(--black);
-    background-image:linear-gradient(135deg,#0a0a0a 0%,#1a1a1a 60%,#0a0a0a 100%);
-    color:var(--ink);
-  }
-
-  /* 頂部品牌列 */
-  .brand{
-    display:flex;align-items:center;gap:10px;
-    padding:18px 20px 6px;color:var(--white);
-    font-weight:800;letter-spacing:.18em;font-size:14px;
-  }
+  body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","Noto Sans JP",sans-serif;background:var(--black);background-image:linear-gradient(135deg,#0a0a0a 0%,#1a1a1a 60%,#0a0a0a 100%);color:var(--ink)}
+  .brand{display:flex;align-items:center;gap:10px;padding:18px 20px 6px;color:var(--white);font-weight:800;letter-spacing:.18em;font-size:14px}
   .brand::before{content:"";width:6px;height:22px;background:var(--red);border-radius:2px}
-
-  /* 卡片 */
-  .card{
-    max-width:420px;margin:14px auto 32px;
-    background:var(--white);border-radius:18px;padding:26px 24px 22px;
-    box-shadow:0 12px 40px rgba(0,0,0,.45);
-    border-top:6px solid var(--red);
-  }
+  .card{max-width:420px;margin:14px auto 32px;background:var(--white);border-radius:18px;padding:26px 24px 22px;box-shadow:0 12px 40px rgba(0,0,0,.45);border-top:6px solid var(--red)}
   h1{font-size:22px;margin:0 0 6px;font-weight:800;letter-spacing:.02em}
   h1 small{display:block;font-size:12px;color:var(--red);font-weight:700;letter-spacing:.2em;margin-bottom:6px}
   p{color:var(--muted);font-size:14px;line-height:1.7;margin:0 0 14px}
-
-  .meta{
-    display:flex;align-items:center;gap:8px;
-    font-size:13px;color:var(--muted);
-    background:#f7f7f7;border-left:3px solid var(--black);
-    padding:10px 12px;border-radius:8px;margin-bottom:16px;
-  }
+  .meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);background:#f7f7f7;border-left:3px solid var(--black);padding:10px 12px;border-radius:8px;margin-bottom:16px}
   .meta span{color:var(--ink);font-weight:700}
-
-  input{
-    width:100%;padding:14px;border:2px solid var(--line);border-radius:12px;
-    font-size:17px;margin:6px 0 12px;outline:none;background:#fff;
-    transition:border-color .15s;
-  }
+  input{width:100%;padding:14px;border:2px solid var(--line);border-radius:12px;font-size:17px;margin:6px 0 12px;outline:none;background:#fff;transition:border-color .15s}
   input:focus{border-color:var(--red)}
-
-  button.primary{
-    width:100%;padding:15px;border:0;border-radius:12px;
-    background:var(--red);color:var(--white);
-    font-size:16px;font-weight:800;letter-spacing:.06em;
-    box-shadow:0 6px 18px rgba(225,6,0,.35);
-    transition:transform .08s,background .15s;
-  }
+  button.primary{width:100%;padding:15px;border:0;border-radius:12px;background:var(--red);color:var(--white);font-size:16px;font-weight:800;letter-spacing:.06em;box-shadow:0 6px 18px rgba(225,6,0,.35);transition:transform .08s,background .15s}
   button.primary:active{transform:scale(.98)}
   button.primary:hover{background:var(--red-dark)}
   button.primary:disabled{opacity:.55;box-shadow:none}
-
-  /* 狀態訊息 */
-  #msg{
-    font-size:14px;margin-top:14px;min-height:22px;word-break:break-all;
-    color:var(--ink);display:flex;align-items:center;gap:8px;
-  }
-  #msg.err{
-    background:#fdecec;color:var(--red-dark);border-left:3px solid var(--red);
-    padding:10px 12px;border-radius:8px;font-weight:600;
-  }
-  /* 初始「正在確認綁定狀態…」的轉圈 */
-  #msg.loading::before{
-    content:"";width:16px;height:16px;flex:none;border-radius:50%;
-    border:2px solid #f0c9c8;border-top-color:var(--red);
-    animation:spin .8s linear infinite;
-  }
+  #msg{font-size:14px;margin-top:14px;min-height:22px;word-break:break-all;color:var(--ink);display:flex;align-items:center;gap:8px}
+  #msg.err{background:#fdecec;color:var(--red-dark);border-left:3px solid var(--red);padding:10px 12px;border-radius:8px;font-weight:600}
+  #msg.loading::before{content:"";width:16px;height:16px;flex:none;border-radius:50%;border:2px solid #f0c9c8;border-top-color:var(--red);animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-
   #inputArea{display:none}
-
-  /* iframe 表單模式 */
   #formView{position:fixed;inset:0;background:var(--white);display:none;flex-direction:column}
-  .topbar{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:12px 14px;font-size:14px;font-weight:700;
-    background:var(--black);color:var(--white);border-bottom:3px solid var(--red);
-  }
-  .topbar button{
-    background:var(--red);color:var(--white);border:0;border-radius:8px;
-    padding:8px 14px;font-weight:700;
-  }
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;font-size:14px;font-weight:700;background:var(--black);color:var(--white);border-bottom:3px solid var(--red)}
+  .topbar button{background:var(--red);color:var(--white);border:0;border-radius:8px;padding:8px 14px;font-weight:700}
   #formFrame{flex:1;width:100%;border:0}
-
   .foot{text-align:center;color:#777;font-size:11px;letter-spacing:.1em;padding-bottom:20px}
 </style>
 </head>
@@ -102,77 +39,147 @@
 <div class="brand">ZELO SPORT</div>
 
 <div id="bindCard" class="card">
-  <h1><small>REPAIR SERVICE</small>通知綁定</h1>
-  <p>請輸入您的手機號碼，完成後即可在 LINE 收到您的維修申請通知。請填寫與送修表單相同的手機號碼。</p>
-  <div class="meta">LINE 帳號：<span id="name">讀取中…</span></div>
+  <h1><small>REPAIR SERVICE</small><span id="t_title"></span></h1>
+  <p id="t_desc"></p>
+  <div class="meta"><span id="t_lineLabel"></span><span id="name">…</span></div>
   <div id="inputArea">
-    <input id="phone" type="tel" inputmode="numeric" placeholder="請輸入手機號碼，例如 0912345678" autocomplete="tel">
-    <button id="bindBtn" class="primary" type="button">完成綁定</button>
+    <input id="phone" type="tel" inputmode="numeric" autocomplete="tel">
+    <button id="bindBtn" class="primary" type="button"></button>
   </div>
-  <div id="msg" class="loading">正在確認綁定狀態…</div>
+  <div id="msg" class="loading"></div>
 </div>
 
 <div class="foot">© ZELO SPORT</div>
 
 <div id="formView">
   <div class="topbar">
-    <span id="formHint">✅ 綁定完成，請填寫送修表單</span>
-    <button id="closeBtn" type="button">完成，關閉</button>
+    <span id="formHint"></span>
+    <button id="closeBtn" type="button"></button>
   </div>
-  <iframe id="formFrame" title="送修表單"></iframe>
+  <iframe id="formFrame" title="form"></iframe>
 </div>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-// ===== 設定區 =====
-const LIFF_ID     = '2007022255-PfOLsmAp';
-const GAS_URL     = 'https://script.google.com/macros/s/AKfycbyi4Vr_Q7Wl_c-_AcxmcaoN12rzXEIVNLrrBpWC9ASIQQ9CAou5AIkdO4AQyKnc8ilRqw/exec';
-const FORM_ID     = '1FAIpQLSdoxfnVi2zkaI7p7MOcuVVySrR1WztmBP-G5rO-3MbKrq7QJg';
-const ENTRY_PHONE = 'entry.1237086045';
-const ENTRY_NAME  = 'entry.1394252463';
-const FORM_MODE   = 'redirect';   // 'redirect'（建議）或 'iframe'
+// ===== 共用設定 =====
+const LIFF_ID   = '2007022255-PfOLsmAp';
+const GAS_URL   = 'https://script.google.com/macros/s/AKfycbyi4Vr_Q7Wl_c-_AcxmcaoN12rzXEIVNLrrBpWC9ASIQQ9CAou5AIkdO4AQyKnc8ilRqw/exec';
+const FORM_MODE = 'redirect';
 
-const ERROR_TEXT = {
-  invalid_phone:           '手機號碼格式不正確，請輸入 09 開頭的 10 碼號碼。',
-  invalid_userId:          '無法取得 LINE 帳號資訊，請關閉後重新從 LINE 開啟此頁。',
-  bindings_header_missing: '系統設定異常，請聯絡客服協助。',
-  invalid_json:            '資料格式錯誤，請重新操作一次。',
-  unknown_action:          '系統無法辨識此操作，請重新操作一次。',
-  server_error:            '系統暫時忙碌，請稍後再試。'
+// ===== 語系設定：表單 ID / entry / 電話規則 / 文字 =====
+const CFG = {
+  ZH: {
+    htmlLang: 'zh-Hant',
+    FORM_ID:     '1FAIpQLSdoxfnVi2zkaI7p7MOcuVVySrR1WztmBP-G5rO-3MbKrq7QJg',
+    ENTRY_PHONE: 'entry.1237086045',
+    ENTRY_NAME:  'entry.1394252463',
+    normalize(v){
+      let d = String(v||'').replace(/\D/g,'');
+      if (d.startsWith('886')) d = '0' + d.slice(3);
+      if (d.length === 9 && d.startsWith('9')) d = '0' + d;
+      return d;
+    },
+    valid: p => /^09\d{8}$/.test(p),
+    T: {
+      title:'通知綁定',
+      desc:'請輸入您的手機號碼，完成後即可在 LINE 收到您的維修申請通知。請填寫與送修表單相同的手機號碼。',
+      lineLabel:'LINE 帳號：', loadingName:'讀取中…', checking:'正在確認綁定狀態…',
+      placeholder:'請輸入手機號碼，例如 0912345678', bindBtn:'完成綁定',
+      badPhone:'請輸入正確的 10 碼手機號碼', binding:'綁定中…',
+      opening:'正在開啟送修表單…', boundOpening:'綁定完成！正在開啟送修表單…',
+      hintNew:'✅ 綁定完成，請填寫送修表單', hintOld:'📋 請填寫送修表單', close:'完成，關閉',
+      badResp:'系統回應異常，請稍後再試。', netFail:'連線失敗，請確認網路後再試。',
+      bindFail:'綁定失敗，請稍後再試。', initFail:'初始化失敗：',
+      ERR:{
+        invalid_phone:'手機號碼格式不正確，請輸入 09 開頭的 10 碼號碼。',
+        invalid_userId:'無法取得 LINE 帳號資訊，請關閉後重新從 LINE 開啟此頁。',
+        bindings_header_missing:'系統設定異常，請聯絡客服協助。',
+        invalid_json:'資料格式錯誤，請重新操作一次。',
+        unknown_action:'系統無法辨識此操作，請重新操作一次。',
+        server_error:'系統暫時忙碌，請稍後再試。'
+      }
+    }
+  },
+  JP: {
+    htmlLang: 'ja',
+    FORM_ID:     'JP_FORM_ID_HERE',          // ← 日文表單 ID
+    ENTRY_PHONE: 'entry.XXXXXXXXX',          // ← 受取人電話番号
+    ENTRY_NAME:  'entry.YYYYYYYYY',          // ← LINE 表示名
+    normalize(v){
+      let d = String(v||'').replace(/\D/g,'');
+      if (d.startsWith('81')) d = '0' + d.slice(2);        // +81 → 0
+      if (d.length === 10 && /^[789]0/.test(d)) d = '0' + d; // 掉 0 補回
+      return d;
+    },
+    valid: p => /^0[789]0\d{8}$/.test(p),   // 070/080/090 共 11 碼
+    T: {
+      title:'通知連携',
+      desc:'携帯電話番号を入力してください。連携後、修理受付の進捗を LINE でお知らせします。修理受付フォームと同じ電話番号をご入力ください。',
+      lineLabel:'LINE アカウント：', loadingName:'読み込み中…', checking:'連携状況を確認しています…',
+      placeholder:'例：09012345678', bindBtn:'連携する',
+      badPhone:'正しい携帯電話番号（11桁）を入力してください', binding:'連携中…',
+      opening:'修理受付フォームを開いています…', boundOpening:'連携が完了しました！フォームを開いています…',
+      hintNew:'✅ 連携完了。フォームをご入力ください', hintOld:'📋 フォームをご入力ください', close:'閉じる',
+      badResp:'システム応答に問題があります。しばらくしてから再度お試しください。',
+      netFail:'通信に失敗しました。ネットワークをご確認ください。',
+      bindFail:'連携に失敗しました。しばらくしてから再度お試しください。', initFail:'初期化エラー：',
+      ERR:{
+        invalid_phone:'電話番号の形式が正しくありません。070/080/090 から始まる 11 桁で入力してください。',
+        invalid_userId:'LINE アカウント情報を取得できません。LINE から再度開いてください。',
+        bindings_header_missing:'システム設定に問題があります。サポートまでご連絡ください。',
+        invalid_json:'データ形式エラーです。もう一度お試しください。',
+        unknown_action:'操作を認識できません。もう一度お試しください。',
+        server_error:'システムが混雑しています。しばらくしてから再度お試しください。'
+      }
+    }
+  }
 };
 
-let profile = null;
+// ===== 語系判斷：URL ?lang=jp 優先，其次 LINE 語言 =====
+function detectLang(){
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q) return q.toLowerCase().startsWith('j') ? 'JP' : 'ZH';
+  try { if ((liff.getLanguage() || '').toLowerCase().startsWith('ja')) return 'JP'; } catch(_){}
+  return 'ZH';
+}
+
+let LANG = 'ZH', C = CFG.ZH, T = CFG.ZH.T, profile = null;
 const $ = id => document.getElementById(id);
 
-function setMsg(text, isErr = false){
+function applyTexts(){
+  document.documentElement.lang = C.htmlLang;
+  $('t_title').textContent = T.title;
+  $('t_desc').textContent = T.desc;
+  $('t_lineLabel').textContent = T.lineLabel;
+  $('name').textContent = T.loadingName;
+  $('phone').placeholder = T.placeholder;
+  $('bindBtn').textContent = T.bindBtn;
+  $('closeBtn').textContent = T.close;
+  $('msg').textContent = T.checking;
+}
+
+function setMsg(text, isErr=false){
   $('msg').textContent = text;
   $('msg').className = isErr ? 'err' : '';
 }
 
-function normalizePhone(v){
-  let d = String(v || '').replace(/\D/g, '');
-  if (d.startsWith('886')) d = '0' + d.slice(3);
-  if (d.length === 9 && d.startsWith('9')) d = '0' + d;
-  return d;
-}
-
 function buildFormUrl(phone){
-  const p = new URLSearchParams({ usp: 'pp_url' });
-  if (FORM_MODE === 'iframe') p.set('embedded', 'true');
-  p.set(ENTRY_PHONE, phone);
-  if (ENTRY_NAME && profile?.displayName) p.set(ENTRY_NAME, profile.displayName);
-  return `https://docs.google.com/forms/d/e/${FORM_ID}/viewform?${p}`;
+  const p = new URLSearchParams({ usp:'pp_url' });
+  if (FORM_MODE === 'iframe') p.set('embedded','true');
+  p.set(C.ENTRY_PHONE, phone);
+  if (C.ENTRY_NAME && profile?.displayName) p.set(C.ENTRY_NAME, profile.displayName);
+  return `https://docs.google.com/forms/d/e/${C.FORM_ID}/viewform?${p}`;
 }
 
-function showForm(phone, already = false){
+function showForm(phone, already=false){
   const url = buildFormUrl(phone);
-  if (FORM_MODE === 'redirect') {
+  if (FORM_MODE === 'redirect'){
     $('inputArea').style.display = 'none';
-    setMsg(already ? '正在開啟送修表單…' : '綁定完成！正在開啟送修表單…');
+    setMsg(already ? T.opening : T.boundOpening);
     setTimeout(() => { window.location.href = url; }, 800);
     return;
   }
-  $('formHint').textContent = already ? '📋 請填寫送修表單' : '✅ 綁定完成，請填寫送修表單';
+  $('formHint').textContent = already ? T.hintOld : T.hintNew;
   $('formFrame').src = url;
   $('bindCard').style.display = 'none';
   $('formView').style.display = 'flex';
@@ -189,65 +196,50 @@ $('closeBtn').onclick = () => liff.isInClient() ? liff.closeWindow() : window.cl
 
 async function main(){
   await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) { liff.login(); return; }
+  LANG = detectLang(); C = CFG[LANG]; T = C.T;
+  applyTexts();
+
+  if (!liff.isLoggedIn()){ liff.login(); return; }
   profile = await liff.getProfile();
   $('name').textContent = profile.displayName;
 
   try {
-    const r = await fetch(`${GAS_URL}?action=check&userId=${encodeURIComponent(profile.userId)}`, {
-      method: 'GET',
-      redirect: 'follow'
-    });
+    const r = await fetch(`${GAS_URL}?action=check&userId=${encodeURIComponent(profile.userId)}&lang=${LANG}`, { method:'GET', redirect:'follow' });
     const d = await r.json();
-    if (d.bound && d.phone) { showForm(d.phone, true); return; }
-  } catch (_) { /* 檢查失敗就照常顯示綁定輸入區 */ }
+    if (d.bound && d.phone){ showForm(d.phone, true); return; }
+  } catch(_){}
 
   showBindInput();
 }
 
 async function bind(){
-  const phone = normalizePhone($('phone').value);
-  if (!/^09\d{8}$/.test(phone)) { setMsg('請輸入正確的 10 碼手機號碼', true); return; }
+  const phone = C.normalize($('phone').value);
+  if (!C.valid(phone)){ setMsg(T.badPhone, true); return; }
 
   $('bindBtn').disabled = true;
-  setMsg('綁定中…');
+  setMsg(T.binding);
 
   try {
     const r = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      redirect: 'follow',
-      body: JSON.stringify({
-        action: 'bind',
-        userId: profile.userId,
-        displayName: profile.displayName,
-        phone
-      })
+      method:'POST',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      redirect:'follow',
+      body: JSON.stringify({ action:'bind', userId:profile.userId, displayName:profile.displayName, phone, lang:LANG })
     });
-
     const raw = await r.text();
     let d;
     try { d = JSON.parse(raw); }
-    catch (_) {
-      setMsg('系統回應異常，請稍後再試。', true);
-      $('bindBtn').disabled = false;
-      return;
-    }
+    catch(_){ setMsg(T.badResp, true); $('bindBtn').disabled = false; return; }
 
     const ok = d.ok === true || d.success === true || d.status === 'ok' || d.status === 'already_bound';
-    if (ok) {
-      showForm(phone, d.status === 'already_bound');
-    } else {
-      setMsg(d.message || ERROR_TEXT[d.error] || '綁定失敗，請稍後再試。', true);
-      $('bindBtn').disabled = false;
-    }
-  } catch (e) {
-    setMsg('連線失敗，請確認網路後再試。', true);
-    $('bindBtn').disabled = false;
+    if (ok) showForm(phone, d.status === 'already_bound');
+    else { setMsg(d.message || T.ERR[d.error] || T.bindFail, true); $('bindBtn').disabled = false; }
+  } catch(e){
+    setMsg(T.netFail, true); $('bindBtn').disabled = false;
   }
 }
 
-main().catch(e => { setMsg('初始化失敗：' + e.message, true); });
+main().catch(e => { setMsg(T.initFail + e.message, true); });
 </script>
 </body>
 </html>
